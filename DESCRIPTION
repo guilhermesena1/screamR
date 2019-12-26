@@ -1,0 +1,15 @@
+Package: screamr
+Type: Package
+Title: An R package for scRNA-Seq data analysis
+Version: 0.1
+Date: 2019-12-26
+Author: Guilherme Sena
+Maintainer: Guilherme Sena <desenabr@usc.edu>
+Description: An R package for scRNA-Seq data analysis
+License: GNU Public License v3.0
+Imports:
+    Rcpp (>= 1.0.3),
+    RMTstat,
+    mclust
+LinkingTo: Rcpp, RcppEigen
+RoxygenNote: 7.0.2
