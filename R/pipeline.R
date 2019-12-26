@@ -224,11 +224,16 @@ ClusterWithFixedK <- function(m.svd, k, init = NULL,verbose=T){
 #' m.scale <- GeneScale(m)
 #' m.svd <- ReduceDimenson(m.scale)
 #' clusters <- ClusterCells(m.svd)
-ClusterCells <- function(m.svd, N = 30,verbose=T){
+ClusterCells <- function(m.svd, N = 50, bic = F, verbose=T){
   # Number of clusters cannot be higher than number of cells
   if(N > nrow(m.svd)){
     LogProcess("WARNING: Scaling down max number of clusters to number of cells")
     N <- nrow(m.svd)
+  }
+
+  if (bic) {
+    return(list(mclust = Mclust(m.svd, G=1:N, prior=priorControl(),
+                         modelNames="VVV")))
   }
 
   # This instructs which cells to merge based on hc
