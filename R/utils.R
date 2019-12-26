@@ -8,7 +8,7 @@ readMM <- function(mtx.file) {
   if (!file.exists(mtx.file))
     stop(paste0("File not found: ", mtx.file))
 
-  as(Matrix::readMM(mtx.fiel), 'dgCMatrix')
+  as(Matrix::readMM(mtx.file), 'dgCMatrix')
 }
 
 #' Reads 10X output matrix
