@@ -72,31 +72,11 @@ ColumnScale <- function(m.raw, size.factors = T, norm.factor = NULL){
   Matrix::t(Matrix::t(m.raw)/sf)
 }
 
-#' Gene-wise scaling of log-normalized data
-#'
-#' Subtracts the row mean and divides by the row standard deviation.
-#' @param m the normalized matrix (eg: from LogNormalize)
-#' @return The scaled matrix, where each row has mean = 0 and sd = 1
-#' @export
-#' @examples
-#' m.raw <- matrix(rpois(1000, lambda = 10), ncol = 20)
-#' m <- LogNormalize(m)
-#' m.scale <- GeneScale(m)
-GeneScale <- function(m){
-  # Cannot divide by zero standard deviation
-  sds <- apply(m,1,sd)
-  m <- m[sds>0,]
-
-  # Scale by row, ie, subtract each gene by mean and divide by gene sd
-  m <- Matrix::t(scale(Matrix::t(m)))
-
-  return(m)
-}
 #' Reduces the matrix to SVD space
 #'
 #' Performs svd and keeps only the dimensions whose eigenvector is larger than
 #' the theoretical maximum of the same matrix with standard normal values
-#' @param m.scale the scaled matrix (eg: from GeneScale)
+#' @param m the column-scaled matrix
 #' @return The matrix product V * Sigma in the Singular Value Decomposition of
 #' m.scale
 #' @export
@@ -105,10 +85,12 @@ GeneScale <- function(m){
 #' m <- LogNormalize(m)
 #' m.scale <- GeneScale(m)
 #' m.svd <- ReduceDimenson(m.scale)
-ReduceDimension <- function (m.scale){
-  M <- ncol(m.scale)
-  N <- nrow(m.scale)
-  m.svd <- gmodels::fast.svd(m.scale)
+ReduceDimension <- function (m){
+  M <- ncol(m)
+  N <- nrow(m)
+  m.svd <- gmodels::fast.svd(Matrix::t(m),
+                             scale = T,
+                             center = T)
 
   eigenvalues <- m.svd$d/sqrt(N)
 
@@ -120,7 +102,7 @@ ReduceDimension <- function (m.scale){
   if(length(keep) < 2)
     keep <- c(1,2)
 
-  return(m.svd$v[,keep] %*% diag(m.svd$d[keep]))
+  return(m.svd$u[,keep] %*% diag(m.svd$d[keep]))
 }
 #' Reduces the matrix to SVD space to a fixed number of dimensions
 #'
@@ -132,24 +114,34 @@ ReduceDimension <- function (m.scale){
 #' performance and no error, otherwise a warning is printed to increase the
 #' guess size. 
 #'  
-#' @param m.scale the scaled matrix (eg: from GeneScale)
+#' @param m the column-normalized matrix
 #' @return The matrix product V * Sigma in the Singular Value Decomposition of
-#' m.scale
+#' m
 #' @export
 #' @examples
 #' m.raw <- matrix(rpois(1000, lambda = 10), ncol = 20)
 #' m <- LogNormalize(m)
-#' m.scale <- GeneScale(m)
-#' m.svd <- ReduceDimensonTruncated(m.scale, N = 100)
-ReduceDimensionTruncated <- function (m.scale, nv = 100){
-  M <- ncol(m.scale)
-  N <- nrow(m.scale)
-  m.svd <- irlba::irlba(m.scale, nv = nv)
+#' m.svd <- ReduceDimensonTruncated(m, N = 100)
+ReduceDimensionTruncated <- function (m, nv = 100){
+  M <- ncol(m)
+  N <- nrow(m)
 
-  eigenvalues <- m.svd$d/sqrt(N)
+  # calculate mean and sd without losing sparsity
+  LogProcess("calculating gene means and variances")
+  means <-ColSums(m) / N
+  vars <- ColVars(m)
+
+  # calculte svd without losing sparsity
+  LogProcess("running irlba...")
+  m.svd <- irlba::irlba(m,
+                        nv = nv,
+                        center = means,
+                        scale = vars)
+
+  eigenvalues <- m.svd$d/sqrt(M)
 
   # Eigenvalues larger than the maximum of the MP distribution
-  p.values <- 1 - RMTstat::pmp(eigenvalues, ndf = N, pdim = M)
+  p.values <- 1 - RMTstat::pmp(eigenvalues, ndf = M, pdim = N)
   keep <- which(p.values < 0.01)
 
   # Prints a warning if all principal components are significant, which means
@@ -158,7 +150,7 @@ ReduceDimensionTruncated <- function (m.scale, nv = 100){
     LogProcess(paste0("[WARNING] All PCs significant, consider increasing",
                       "the number of  PCs!"))
 
-    mp.eig <- (1 + sqrt(ncol(m.scale)/nrow(m.scale)))^2
+    mp.eig <- (1 + sqrt(N/M))^2
     LogProcess("Normalized eigenvalues: ", paste(round(eigenvalues,3),
                                            collapse=" ")) 
     LogProcess("MP eigenvalue:", mp.eig)
@@ -167,6 +159,7 @@ ReduceDimensionTruncated <- function (m.scale, nv = 100){
   # Keep at least 2 dimensions
   if(length(keep) < 2)
     keep <- c(1,2)
+  LogProcess("Effective dimension: ", length(keep))
   return(m.svd$v[,keep] %*% diag(m.svd$d[keep]))
 }
 

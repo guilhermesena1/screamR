@@ -3,5 +3,6 @@
 #####################################################################
 
 LogProcess <- function(...){
-  write(paste0("[SCREAM] ", Sys.time(), " ", paste(...,collapse=" ")), stderr())
+  write(paste0("[screamr] ", Sys.time(), " ",
+               paste(...,collapse=" ")), stderr())
 }

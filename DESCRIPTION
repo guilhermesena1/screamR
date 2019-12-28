@@ -12,6 +12,7 @@ Imports:
     RMTstat,
     mclust
 Depends:
-    mclust
+    mclust,
+    RMTstat,
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 7.0.2

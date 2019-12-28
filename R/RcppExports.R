@@ -15,3 +15,10 @@ RowSums <- function(m) {
     .Call('_screamr_RowSums', PACKAGE = 'screamr', m)
 }
 
+#' Row variances of sparse matrix
+#'
+#' @export
+ColVars <- function(m) {
+    .Call('_screamr_ColVars', PACKAGE = 'screamr', m)
+}
+

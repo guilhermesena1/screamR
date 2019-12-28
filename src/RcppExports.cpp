@@ -28,10 +28,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ColVars
+NumericVector ColVars(Eigen::SparseMatrix<double> m);
+RcppExport SEXP _screamr_ColVars(SEXP mSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::SparseMatrix<double> >::type m(mSEXP);
+    rcpp_result_gen = Rcpp::wrap(ColVars(m));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_screamr_ColSums", (DL_FUNC) &_screamr_ColSums, 1},
     {"_screamr_RowSums", (DL_FUNC) &_screamr_RowSums, 1},
+    {"_screamr_ColVars", (DL_FUNC) &_screamr_ColVars, 1},
     {NULL, NULL, 0}
 };
 
