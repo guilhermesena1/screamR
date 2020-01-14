@@ -20,7 +20,7 @@ Read10X <- function(dir){
     stop("Multiple mtx files in directory!")
   mtx.file <- as.character(mtx.file[1])
 
-  mtx <- screamR::readMM(paste0(dir, "/",mtx.file))
+  mtx <- screamr::readMM(paste0(dir, "/",mtx.file))
   genes.file <- grep("^genes", dir.files, value=T)
   if(length(genes.file) > 1)
     stop("Multiple gene names files in directory!")

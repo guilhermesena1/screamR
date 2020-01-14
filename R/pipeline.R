@@ -141,7 +141,7 @@ ReduceDimensionTruncated <- function (m, nv = 100){
   eigenvalues <- m.svd$d/sqrt(M)
 
   # Eigenvalues larger than the maximum of the MP distribution
-  p.values <- 1 - RMTstat::pmp(eigenvalues, ndf = M, pdim = N)
+  p.values <- 1 - RMTstat::pmp(eigenvalues, ndf = N, pdim = M)
   keep <- which(p.values < 0.01)
 
   # Prints a warning if all principal components are significant, which means
@@ -150,7 +150,7 @@ ReduceDimensionTruncated <- function (m, nv = 100){
     LogProcess(paste0("[WARNING] All PCs significant, consider increasing",
                       "the number of  PCs!"))
 
-    mp.eig <- (1 + sqrt(N/M))^2
+    mp.eig <- (1 + sqrat(M/N))^2
     LogProcess("Normalized eigenvalues: ", paste(round(eigenvalues,3),
                                            collapse=" ")) 
     LogProcess("MP eigenvalue:", mp.eig)
